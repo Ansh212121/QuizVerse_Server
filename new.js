@@ -1,39 +1,38 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const SignUpModel = require('./models/SignUpSchema');
-const Results = require('./models/ResultSchema');
-require('dotenv').config();
 const bcrypt = require('bcryptjs');
 
+const SignUpModel = require('./models/SignUpSchema');
+const Results = require('./models/ResultSchema');
+
 const app = express();
+
 app.use(express.json());
-app.use(cors({
-  origin: ['http://localhost:5174','http://localhost:5173', 'https://quizwhiz-1t5d.onrender.com','https://quizwhiz-azure-one.vercel.app'],
-  credentials: true
-}));
 
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://quiz-verse-client.vercel.app';
+app.use(
+  cors({
+    origin: FRONTEND_URL,
+    credentials: true
+  })
+);
 
-const URL = process.env.MONGODB_URL;
-
-mongoose.connect(`${URL}/UserDetails`)
-    .then(() => {
-        console.log("MongoDB connected");
-    })
-    .catch(() => {
-        console.log(`Failed to connect MongoDB ${URL}`);
-    });
-
+const MONGO_URI = process.env.MONGODB_URL;
+mongoose
+  .connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 app.get('/', (req, res) => {
   res.send('Backend is running!');
 });
 
-app.use('/user',require('./routes/auth'));
-app.use('/results',require('./routes/results'));
+app.use('/user', require('./routes/auth'));
+app.use('/results', require('./routes/results'));
 
-// const PORT = 4000;
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-    console.log(`Server Running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
